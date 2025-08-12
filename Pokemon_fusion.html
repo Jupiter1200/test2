@@ -851,11 +851,17 @@
 
         // Display the fusion result
         function displayFusionResult(fusionResult) {
+            let imageUrl = fusionResult.image;
+            const validUrl = typeof imageUrl === 'string' && imageUrl.trim() !== '' &&
+                (/^https?:\/\//i.test(imageUrl) || /^data:image\//i.test(imageUrl));
+            if (!validUrl) {
+                imageUrl = 'about:blank';
+            }
             fusionResultDiv.innerHTML = `
-                <img class="fusion-image" src="${fusionResult.image}" alt="${fusionResult.name}">
+                <img class="fusion-image" src="${imageUrl}" alt="${fusionResult.name}">
                 <p class="fusion-name">${fusionResult.name}</p>
             `;
-            resultImage.src = fusionResult.image;
+            resultImage.src = imageUrl;
             resultImage.alt = fusionResult.name;
             resultName.textContent = fusionResult.name;
             // Create a detailed description with types and abilities
