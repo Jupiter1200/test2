@@ -857,12 +857,27 @@
             if (!validUrl) {
                 imageUrl = 'about:blank';
             }
-            fusionResultDiv.innerHTML = `
-                <img class="fusion-image" src="${imageUrl}" alt="${fusionResult.name}">
-                <p class="fusion-name">${fusionResult.name}</p>
-            `;
+            // Update the existing result image
             resultImage.src = imageUrl;
             resultImage.alt = fusionResult.name;
+
+            // Display the updated image in the fusion result without creating a new <img>
+            fusionResultDiv.innerHTML = `
+                <div class="fusion-image"></div>
+                <p class="fusion-name">${fusionResult.name}</p>
+            `;
+            const fusionImageEl = fusionResultDiv.querySelector('.fusion-image');
+            const applyFusionImage = () => {
+                fusionImageEl.style.backgroundImage = `url('${resultImage.src}')`;
+                fusionImageEl.style.backgroundSize = 'contain';
+                fusionImageEl.style.backgroundRepeat = 'no-repeat';
+                fusionImageEl.style.backgroundPosition = 'center';
+            };
+            if (resultImage.complete) {
+                applyFusionImage();
+            } else {
+                resultImage.addEventListener('load', applyFusionImage, { once: true });
+            }
             resultName.textContent = fusionResult.name;
             // Create a detailed description with types and abilities
             const typesText = fusionResult.types.join(', ');
