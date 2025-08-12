@@ -430,7 +430,7 @@
                 <button class="fusion-button" id="fuseButton" disabled>Fuse Pokémon!</button>
             </div>
             <div class="fusion-result" id="fusionDetails" style="display: none;">
-                <img class="result-image" id="resultImage" src="" alt="Fusion Pokémon">
+                <img class="result-image" id="resultImage" src="about:blank" alt="Fusion Pokémon">
                 <h3 class="result-name" id="resultName"></h3>
                 <p class="result-description" id="resultDescription"></p>
             </div>
@@ -464,6 +464,8 @@
         const apiKeysList = document.getElementById('apiKeysList');
         const serverWarning = document.getElementById('serverWarning');
         const connectionStatus = document.getElementById('connectionStatus');
+        const placeholderImage = 'about:blank';
+        resultImage.src = placeholderImage;
 
         function checkServerStatus() {
             isRunningFromServer = location.protocol !== 'file:';
@@ -854,11 +856,8 @@
             let imageUrl = fusionResult.image;
             const validUrl = typeof imageUrl === 'string' && imageUrl.trim() !== '' &&
                 (/^https?:\/\//i.test(imageUrl) || /^data:image\//i.test(imageUrl));
-            if (!validUrl) {
-                imageUrl = 'about:blank';
-            }
             // Update the existing result image
-            resultImage.src = imageUrl;
+            resultImage.src = validUrl ? imageUrl : placeholderImage;
             resultImage.alt = fusionResult.name;
 
             // Display the updated image in the fusion result without creating a new <img>
