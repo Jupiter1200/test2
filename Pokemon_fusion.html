@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Fusion Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background-color: #ffcb05;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: #3b4cca;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ff0000;
+        }
+        main {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        .pokemon-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .pokemon-card.selected {
+            background-color: #e0f7fa;
+            border: 2px solid #3b4cca;
+        }
+        .pokemon-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .pokemon-name {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .pokemon-id {
+            color: #777;
+            font-size: 0.9rem;
+        }
+        .fusion-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+        .fusion-title {
+            font-family: 'Press Start 2P', cursive;
+            color: #3b4cca;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .fusion-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .fusion-pokemon {
+            text-align: center;
+        }
+        .fusion-image {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .fusion-name {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .plus-sign {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcb05;
+        }
+        .equals-sign {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcb05;
+        }
+        .fusion-result {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .result-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border: 3px solid #ffcb05;
+            border-radius: 10px;
+        }
+        .result-name {
+            font-family: 'Press Start 2P', cursive;
+            color: #3b4cca;
+            margin-bottom: 10px;
+        }
+        .result-description {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .fusion-button {
+            background-color: #3b4cca;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        .fusion-button:hover {
+            background-color: #2a3a8a;
+        }
+        .fusion-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3b4cca;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3b4cca;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        .api-key-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .api-key-section h3 {
+            color: #3b4cca;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .api-key-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .api-key-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .api-key-button {
+            background-color: #3b4cca;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .api-key-button:hover {
+            background-color: #2a3a8a;
+        }
+        .api-key-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+        .api-key-info a {
+            color: #3b4cca;
+            font-weight: bold;
+        }
+        .api-key-status {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .status-valid {
+            color: #4caf50;
+        }
+        .status-invalid {
+            color: #f44336;
+        }
+        .server-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .server-warning a {
+            color: #3b4cca;
+            font-weight: bold;
+        }
+        .error-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            color: #721c24;
+        }
+        .fallback-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .fallback-button:hover {
+            background-color: #218838;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-online {
+            background-color: #4caf50;
+        }
+        .status-offline {
+            background-color: #f44336;
+        }
+        .api-keys-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+        .api-key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        .api-key-item .key-text {
+            flex-grow: 1;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .api-key-item .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        .api-key-item .delete-btn:hover {
+            background-color: #c82333;
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            .pokemon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            .fusion-image {
+                width: 100px;
+                height: 100px;
+            }
+            .result-image {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Pokémon Fusion Lab</h1>
+        <p class="subtitle">Select two Pokémon to create a unique fusion!</p>
+    </header>
+    <main>
+        <section class="api-key-section">
+            <h3>
+                <span id="connectionStatus" class="status-indicator status-offline"></span>
+                Gemini API Configuration
+            </h3>
+            <div class="api-key-input-container">
+                <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Enter your Gemini API Key">
+                <button id="addApiKeyButton" class="api-key-button">Add API Key</button>
+                <ul id="apiKeysList" class="api-keys-list"></ul>
+                <div id="apiKeyStatus" class="api-key-status"></div>
+                <p class="api-key-info">
+                    Get your API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>. 
+                    This key is required to generate fusion Pokémon images.
+                </p>
+                <p class="api-key-info">
+                    <strong>Tip:</strong> Your API keys are saved in your browser and will persist between sessions.
+                </p>
+            </div>
+        </section>
+        <div id="serverWarning" class="server-warning" style="display: none;">
+            <strong>Important:</strong> For best results, run this website from a local server. 
+            <a href="#" onclick="showServerInstructions()">Click here for instructions</a>.
+        </div>
+        <section class="pokemon-grid" id="pokemonGrid">
+            <!-- Pokémon cards will be dynamically inserted here -->
+        </section>
+        <section class="fusion-section">
+            <h2 class="fusion-title">Pokémon Fusion Machine</h2>
+            <div class="fusion-container">
+                <div class="fusion-pokemon" id="pokemon1">
+                    <div class="fusion-image-placeholder">Select a Pokémon</div>
+                    <p class="fusion-name">First Pokémon</p>
+                </div>
+                <div class="plus-sign">+</div>
+                <div class="fusion-pokemon" id="pokemon2">
+                    <div class="fusion-image-placeholder">Select a Pokémon</div>
+                    <p class="fusion-name">Second Pokémon</p>
+                </div>
+                <div class="equals-sign">=</div>
+                <div class="fusion-pokemon" id="fusionResult">
+                    <div class="fusion-image-placeholder">Fusion Result</div>
+                    <p class="fusion-name">???</p>
+                </div>
+            </div>
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <p>Creating your fusion Pokémon...</p>
+            </div>
+            <div style="text-align: center;">
+                <button class="fusion-button" id="fuseButton" disabled>Fuse Pokémon!</button>
+            </div>
+            <div class="fusion-result" id="fusionDetails" style="display: none;">
+                <img class="result-image" id="resultImage" src="" alt="Fusion Pokémon">
+                <h3 class="result-name" id="resultName"></h3>
+                <p class="result-description" id="resultDescription"></p>
+            </div>
+        </section>
+    </main>
+    <div class="notification" id="notification"></div>
+    <script>
+        // Global variables
+        let selectedPokemon = [];
+        let allPokemon = [];
+        let geminiApiKeys = [];
+        let currentApiKeyIndex = 0;
+        let isRunningFromServer = false;
+
+        // DOM elements
+        const pokemonGrid = document.getElementById('pokemonGrid');
+        const pokemon1Div = document.getElementById('pokemon1');
+        const pokemon2Div = document.getElementById('pokemon2');
+        const fusionResultDiv = document.getElementById('fusionResult');
+        const fuseButton = document.getElementById('fuseButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const fusionDetails = document.getElementById('fusionDetails');
+        const resultImage = document.getElementById('resultImage');
+        const resultName = document.getElementById('resultName');
+        const resultDescription = document.getElementById('resultDescription');
+        const notification = document.getElementById('notification');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const addApiKeyButton = document.getElementById('addApiKeyButton');
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        const apiKeysList = document.getElementById('apiKeysList');
+        const serverWarning = document.getElementById('serverWarning');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        // Pre-defined Pokémon data (first 151) as fallback
+        const predefinedPokemon = [
+            { id: 1, name: "bulbasaur", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" } },
+            { id: 2, name: "ivysaur", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png" } },
+            { id: 3, name: "venusaur", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png" } },
+            { id: 4, name: "charmander", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" } },
+            { id: 5, name: "charmeleon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/5.png" } },
+            { id: 6, name: "charizard", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" } },
+            { id: 7, name: "squirtle", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" } },
+            { id: 8, name: "wartortle", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png" } },
+            { id: 9, name: "blastoise", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png" } },
+            { id: 10, name: "caterpie", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png" } },
+            { id: 11, name: "metapod", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/11.png" } },
+            { id: 12, name: "butterfree", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png" } },
+            { id: 13, name: "weedle", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/13.png" } },
+            { id: 14, name: "kakuna", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/14.png" } },
+            { id: 15, name: "beedrill", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/15.png" } },
+            { id: 16, name: "pidgey", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png" } },
+            { id: 17, name: "pidgeotto", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/17.png" } },
+            { id: 18, name: "pidgeot", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/18.png" } },
+            { id: 19, name: "rattata", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png" } },
+            { id: 20, name: "raticate", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/20.png" } },
+            { id: 21, name: "spearow", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/21.png" } },
+            { id: 22, name: "fearow", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/22.png" } },
+            { id: 23, name: "ekans", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/23.png" } },
+            { id: 24, name: "arbok", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/24.png" } },
+            { id: 25, name: "pikachu", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" } },
+            { id: 26, name: "raichu", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/26.png" } },
+            { id: 27, name: "sandshrew", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/27.png" } },
+            { id: 28, name: "sandslash", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/28.png" } },
+            { id: 29, name: "nidoran-f", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/29.png" } },
+            { id: 30, name: "nidorina", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/30.png" } },
+            { id: 31, name: "nidoqueen", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/31.png" } },
+            { id: 32, name: "nidoran-m", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/32.png" } },
+            { id: 33, name: "nidorino", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/33.png" } },
+            { id: 34, name: "nidoking", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/34.png" } },
+            { id: 35, name: "clefairy", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/35.png" } },
+            { id: 36, name: "clefable", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/36.png" } },
+            { id: 37, name: "vulpix", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png" } },
+            { id: 38, name: "ninetales", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png" } },
+            { id: 39, name: "jigglypuff", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png" } },
+            { id: 40, name: "wigglytuff", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/40.png" } },
+            { id: 41, name: "zubat", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/41.png" } },
+            { id: 42, name: "golbat", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/42.png" } },
+            { id: 43, name: "oddish", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/43.png" } },
+            { id: 44, name: "gloom", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/44.png" } },
+            { id: 45, name: "vileplume", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/45.png" } },
+            { id: 46, name: "paras", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/46.png" } },
+            { id: 47, name: "parasect", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/47.png" } },
+            { id: 48, name: "venonat", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/48.png" } },
+            { id: 49, name: "venomoth", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/49.png" } },
+            { id: 50, name: "diglett", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/50.png" } },
+            { id: 51, name: "dugtrio", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/51.png" } },
+            { id: 52, name: "meowth", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png" } },
+            { id: 53, name: "persian", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/53.png" } },
+            { id: 54, name: "psyduck", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/54.png" } },
+            { id: 55, name: "golduck", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/55.png" } },
+            { id: 56, name: "mankey", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/56.png" } },
+            { id: 57, name: "primeape", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/57.png" } },
+            { id: 58, name: "growlithe", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/58.png" } },
+            { id: 59, name: "arcanine", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/59.png" } },
+            { id: 60, name: "poliwag", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/60.png" } },
+            { id: 61, name: "poliwhirl", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/61.png" } },
+            { id: 62, name: "poliwrath", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/62.png" } },
+            { id: 63, name: "abra", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/63.png" } },
+            { id: 64, name: "kadabra", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/64.png" } },
+            { id: 65, name: "alakazam", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/65.png" } },
+            { id: 66, name: "machop", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/66.png" } },
+            { id: 67, name: "machoke", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/67.png" } },
+            { id: 68, name: "machamp", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/68.png" } },
+            { id: 69, name: "bellsprout", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/69.png" } },
+            { id: 70, name: "weepinbell", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/70.png" } },
+            { id: 71, name: "victreebel", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/71.png" } },
+            { id: 72, name: "tentacool", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/72.png" } },
+            { id: 73, name: "tentacruel", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/73.png" } },
+            { id: 74, name: "geodude", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/74.png" } },
+            { id: 75, name: "graveler", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/75.png" } },
+            { id: 76, name: "golem", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/76.png" } },
+            { id: 77, name: "ponyta", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/77.png" } },
+            { id: 78, name: "rapidash", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/78.png" } },
+            { id: 79, name: "slowpoke", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/79.png" } },
+            { id: 80, name: "slowbro", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/80.png" } },
+            { id: 81, name: "magnemite", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/81.png" } },
+            { id: 82, name: "magneton", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/82.png" } },
+            { id: 83, name: "farfetchd", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/83.png" } },
+            { id: 84, name: "doduo", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/84.png" } },
+            { id: 85, name: "dodrio", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/85.png" } },
+            { id: 86, name: "seel", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/86.png" } },
+            { id: 87, name: "dewgong", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/87.png" } },
+            { id: 88, name: "grimer", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/88.png" } },
+            { id: 89, name: "muk", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/89.png" } },
+            { id: 90, name: "shellder", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/90.png" } },
+            { id: 91, name: "cloyster", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/91.png" } },
+            { id: 92, name: "gastly", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/92.png" } },
+            { id: 93, name: "haunter", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/93.png" } },
+            { id: 94, name: "gengar", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png" } },
+            { id: 95, name: "onix", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png" } },
+            { id: 96, name: "drowzee", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/96.png" } },
+            { id: 97, name: "hypno", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/97.png" } },
+            { id: 98, name: "krabby", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/98.png" } },
+            { id: 99, name: "kingler", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/99.png" } },
+            { id: 100, name: "voltorb", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/100.png" } },
+            { id: 101, name: "electrode", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/101.png" } },
+            { id: 102, name: "exeggcute", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/102.png" } },
+            { id: 103, name: "exeggutor", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/103.png" } },
+            { id: 104, name: "cubone", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/104.png" } },
+            { id: 105, name: "marowak", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/105.png" } },
+            { id: 106, name: "hitmonlee", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/106.png" } },
+            { id: 107, name: "hitmonchan", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/107.png" } },
+            { id: 108, name: "lickitung", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/108.png" } },
+            { id: 109, name: "koffing", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/109.png" } },
+            { id: 110, name: "weezing", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/110.png" } },
+            { id: 111, name: "rhyhorn", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/111.png" } },
+            { id: 112, name: "rhydon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/112.png" } },
+            { id: 113, name: "chansey", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" } },
+            { id: 114, name: "tangela", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/114.png" } },
+            { id: 115, name: "kangaskhan", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/115.png" } },
+            { id: 116, name: "horsea", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/116.png" } },
+            { id: 117, name: "seadra", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/117.png" } },
+            { id: 118, name: "goldeen", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/118.png" } },
+            { id: 119, name: "seaking", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/119.png" } },
+            { id: 120, name: "staryu", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/120.png" } },
+            { id: 121, name: "starmie", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/121.png" } },
+            { id: 122, name: "mr-mime", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/122.png" } },
+            { id: 123, name: "scyther", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/123.png" } },
+            { id: 124, name: "jynx", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/124.png" } },
+            { id: 125, name: "electabuzz", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/125.png" } },
+            { id: 126, name: "magmar", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/126.png" } },
+            { id: 127, name: "pinsir", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/127.png" } },
+            { id: 128, name: "tauros", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/128.png" } },
+            { id: 129, name: "magikarp", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/129.png" } },
+            { id: 130, name: "gyarados", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" } },
+            { id: 131, name: "lapras", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/131.png" } },
+            { id: 132, name: "ditto", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" } },
+            { id: 133, name: "eevee", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" } },
+            { id: 134, name: "vaporeon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/134.png" } },
+            { id: 135, name: "jolteon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/135.png" } },
+            { id: 136, name: "flareon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/136.png" } },
+            { id: 137, name: "porygon", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/137.png" } },
+            { id: 138, name: "omanyte", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/138.png" } },
+            { id: 139, name: "omastar", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/139.png" } },
+            { id: 140, name: "kabuto", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/140.png" } },
+            { id: 141, name: "kabutops", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/141.png" } },
+            { id: 142, name: "aerodactyl", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/142.png" } },
+            { id: 143, name: "snorlax", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png" } },
+            { id: 144, name: "articuno", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/144.png" } },
+            { id: 145, name: "zapdos", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/145.png" } },
+            { id: 146, name: "moltres", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/146.png" } },
+            { id: 147, name: "dratini", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/147.png" } },
+            { id: 148, name: "dragonair", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/148.png" } },
+            { id: 149, name: "dragonite", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/149.png" } },
+            { id: 150, name: "mewtwo", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" } },
+            { id: 151, name: "mew", sprites: { front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png" } }
+        ];
+
+        // Check if running from a server
+        function checkServerStatus() {
+            if (window.location.protocol === 'file:') {
+                serverWarning.style.display = 'block';
+                isRunningFromServer = false;
+                connectionStatus.className = 'status-indicator status-offline';
+            } else {
+                serverWarning.style.display = 'none';
+                isRunningFromServer = true;
+                connectionStatus.className = 'status-indicator status-online';
+            }
+        }
+
+        // Show server instructions
+        function showServerInstructions() {
+            const instructions = "To run this website properly, you need to use a local server:\n" +
+                "1. Python method (easiest):\n" +
+                "   - Open Command Prompt/Terminal\n" +
+                "   - Navigate to the folder with this HTML file\n" +
+                "   - Run: python -m http.server\n" +
+                "   - Open: http://localhost:8000\n" +
+                "2. Node.js method:\n" +
+                "   - Install: npm install -g http-server\n" +
+                "   - Run: http-server\n" +
+                "   - Open: http://localhost:8000\n" +
+                "3. VS Code method:\n" +
+                "   - Install \"Live Server\" extension\n" +
+                "   - Right-click file and select \"Open with Live Server\"";
+            alert(instructions);
+        }
+
+        // Initialize the app
+        async function init() {
+            checkServerStatus();
+            // Try to load saved API keys
+            try {
+                const savedApiKeys = JSON.parse(localStorage.getItem('geminiApiKeys')) || [];
+                if (savedApiKeys.length > 0) {
+                    geminiApiKeys = savedApiKeys;
+                    renderApiKeys();
+                    updateApiKeyStatus(true);
+                }
+            } catch (e) {
+                console.warn('localStorage not available:', e);
+            }
+            // Always load Pokémon from predefined data first
+            loadPredefinedPokemon();
+            // Try to fetch from API if running from server
+            if (isRunningFromServer) {
+                try {
+                    await fetchPokemon();
+                } catch (error) {
+                    console.error('API fetch failed, using predefined data:', error);
+                    showNotification('Using offline Pokémon data. Some features may be limited.');
+                }
+            }
+        }
+
+        // Load Pokémon from predefined data
+        function loadPredefinedPokemon() {
+            allPokemon = [...predefinedPokemon];
+            renderPokemonGrid();
+            showNotification(`Loaded ${allPokemon.length} Pokémon`);
+        }
+
+        // Fetch the first 151 Pokémon from the PokéAPI
+        async function fetchPokemon() {
+            try {
+                // Show loading state
+                pokemonGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Loading Pokémon...</p></div>';
+                // Fetch list of first 151 Pokémon
+                const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                // Fetch details for each Pokémon with a small delay to avoid rate limiting
+                const pokemonPromises = data.results.map(async (pokemon, index) => {
+                    // Add a small delay between requests
+                    await new Promise(resolve => setTimeout(resolve, index * 50));
+                    try {
+                        const pokemonResponse = await fetch(pokemon.url);
+                        return pokemonResponse.json();
+                    } catch (error) {
+                        console.error(`Failed to fetch ${pokemon.name}:`, error);
+                        return null;
+                    }
+                });
+                const results = await Promise.all(pokemonPromises);
+                // Filter out null results and update allPokemon
+                const fetchedPokemon = results.filter(pokemon => pokemon !== null);
+                if (fetchedPokemon.length > 0) {
+                    allPokemon = fetchedPokemon;
+                    renderPokemonGrid();
+                    showNotification(`Loaded ${fetchedPokemon.length} Pokémon from API`);
+                } else {
+                    throw new Error('No Pokémon data received from API');
+                }
+            } catch (error) {
+                console.error('Error fetching Pokémon:', error);
+                throw error; // Re-throw to be caught by caller
+            }
+        }
+
+        // Add API key
+        addApiKeyButton.addEventListener('click', () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                showNotification('Please enter a valid API key');
+                return;
+            }
+            if (!geminiApiKeys.includes(apiKey)) {
+                geminiApiKeys.push(apiKey);
+                try {
+                    localStorage.setItem('geminiApiKeys', JSON.stringify(geminiApiKeys));
+                    renderApiKeys();
+                    updateApiKeyStatus(true);
+                    showNotification('API key added successfully!');
+                } catch (e) {
+                    console.warn('localStorage not available:', e);
+                    updateApiKeyStatus(true);
+                    showNotification('API key added (for this session only)');
+                }
+            } else {
+                showNotification('This API key is already added');
+            }
+            apiKeyInput.value = '';
+        });
+
+        // Render API keys list
+        function renderApiKeys() {
+            apiKeysList.innerHTML = '';
+            geminiApiKeys.forEach((apiKey, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'api-key-item';
+                listItem.innerHTML = `
+                    <span class="key-text">${apiKey}</span>
+                    <button class="delete-btn" onclick="deleteApiKey(${index})">Delete</button>
+                `;
+                apiKeysList.appendChild(listItem);
+            });
+        }
+
+        // Delete API key
+        function deleteApiKey(index) {
+            if (confirm('Are you sure you want to delete this API key?')) {
+                geminiApiKeys.splice(index, 1);
+                try {
+                    localStorage.setItem('geminiApiKeys', JSON.stringify(geminiApiKeys));
+                    renderApiKeys();
+                    updateApiKeyStatus(true);
+                    showNotification('API key deleted successfully!');
+                } catch (e) {
+                    console.warn('localStorage not available:', e);
+                    renderApiKeys();
+                    updateApiKeyStatus(true);
+                    showNotification('API key deleted (for this session only)');
+                }
+            }
+        }
+
+        // Update API key status
+        function updateApiKeyStatus(isValid) {
+            if (isValid && geminiApiKeys.length > 0) {
+                apiKeyStatus.textContent = `✓ ${geminiApiKeys.length} API Keys Saved`;
+                apiKeyStatus.className = 'api-key-status status-valid';
+            } else {
+                apiKeyStatus.textContent = '✗ No Valid API Keys';
+                apiKeyStatus.className = 'api-key-status status-invalid';
+            }
+        }
+
+        // Render the Pokémon grid
+        function renderPokemonGrid() {
+            pokemonGrid.innerHTML = '';
+            if (allPokemon.length === 0) {
+                pokemonGrid.innerHTML = `
+                    <div class="error-message">
+                        <h3>No Pokémon data available</h3>
+                        <button class="fallback-button" onclick="loadPredefinedPokemon()">Load Default Pokémon</button>
+                    </div>
+                `;
+                return;
+            }
+            allPokemon.forEach(pokemon => {
+                const card = document.createElement('div');
+                card.className = 'pokemon-card';
+                card.dataset.id = pokemon.id;
+                card.innerHTML = `
+                    <img class="pokemon-image" src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+                    <p class="pokemon-name">${pokemon.name}</p>
+                    <p class="pokemon-id">#${pokemon.id.toString().padStart(3, '0')}</p>
+                `;
+                card.addEventListener('click', () => selectPokemon(pokemon));
+                pokemonGrid.appendChild(card);
+            });
+        }
+
+        // Handle Pokémon selection
+        function selectPokemon(pokemon) {
+            const card = document.querySelector(`.pokemon-card[data-id="${pokemon.id}"]`);
+            // If Pokémon is already selected, deselect it
+            const index = selectedPokemon.findIndex(p => p.id === pokemon.id);
+            if (index !== -1) {
+                selectedPokemon.splice(index, 1);
+                card.classList.remove('selected');
+                updateFusionDisplay();
+                return;
+            }
+            // If we already have 2 Pokémon selected, replace the oldest one
+            if (selectedPokemon.length >= 2) {
+                const oldPokemon = selectedPokemon.shift();
+                const oldCard = document.querySelector(`.pokemon-card[data-id="${oldPokemon.id}"]`);
+                if (oldCard) oldCard.classList.remove('selected');
+            }
+            // Add the new Pokémon
+            selectedPokemon.push(pokemon);
+            card.classList.add('selected');
+            updateFusionDisplay();
+        }
+
+        // Update the fusion display
+        function updateFusionDisplay() {
+            // Update first Pokémon slot
+            if (selectedPokemon[0]) {
+                pokemon1Div.innerHTML = `
+                    <img class="fusion-image" src="${selectedPokemon[0].sprites.front_default}" alt="${selectedPokemon[0].name}">
+                    <p class="fusion-name">${selectedPokemon[0].name}</p>
+                `;
+            } else {
+                pokemon1Div.innerHTML = `
+                    <div class="fusion-image-placeholder">Select a Pokémon</div>
+                    <p class="fusion-name">First Pokémon</p>
+                `;
+            }
+            // Update second Pokémon slot
+            if (selectedPokemon[1]) {
+                pokemon2Div.innerHTML = `
+                    <img class="fusion-image" src="${selectedPokemon[1].sprites.front_default}" alt="${selectedPokemon[1].name}">
+                    <p class="fusion-name">${selectedPokemon[1].name}</p>
+                `;
+            } else {
+                pokemon2Div.innerHTML = `
+                    <div class="fusion-image-placeholder">Select a Pokémon</div>
+                    <p class="fusion-name">Second Pokémon</p>
+                `;
+            }
+            // Enable/disable fuse button based on selection and API keys
+            const hasApiKeys = geminiApiKeys.length > 0;
+            fuseButton.disabled = selectedPokemon.length !== 2 || !hasApiKeys;
+            // Hide previous fusion result
+            fusionDetails.style.display = 'none';
+            fusionResultDiv.innerHTML = `
+                <div class="fusion-image-placeholder">Fusion Result</div>
+                <p class="fusion-name">???</p>
+            `;
+        }
+
+        // Fuse the selected Pokémon
+        fuseButton.addEventListener('click', async () => {
+            if (selectedPokemon.length !== 2) return;
+            if (geminiApiKeys.length === 0) {
+                showNotification('Please add at least one Gemini API key');
+                return;
+            }
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            fuseButton.disabled = true;
+            try {
+                // Generate fusion using Gemini API
+                const fusionResult = await generateFusionWithGemini(selectedPokemon[0], selectedPokemon[1]);
+                // Display the fusion result
+                displayFusionResult(fusionResult);
+            } catch (error) {
+                showNotification(`Failed to create fusion: ${error.message}`);
+                console.error('Error creating fusion:', error);
+            } finally {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                fuseButton.disabled = false;
+            }
+        });
+
+        // Generate a fusion using Gemini API
+        async function generateFusionWithGemini(pokemon1, pokemon2) {
+            // Create a fusion name by combining parts of both Pokémon names
+            const name1 = pokemon1.name;
+            const name2 = pokemon2.name;
+            const fusionName = name1.substring(0, Math.ceil(name1.length / 2)) + 
+                              name2.substring(Math.floor(name2.length / 2));
+            
+            // Create a detailed prompt for Gemini
+            const prompt = `Create a fusion Pokémon by combining ${name1} and ${name2}. ` +
+                `Name this fusion Pokémon "${fusionName}". ` +
+                `For the image: Generate a high-quality image of this fusion Pokémon that visually combines features of both ${name1} and ${name2}. ` +
+                `The image should be in a Pokémon style, with vibrant colors and clear details. ` +
+                `For the description: Provide a creative description of this fusion Pokémon, including: ` +
+                `- Its appearance (combining features of both Pokémon) ` +
+                `- Its unique abilities (combining abilities of both Pokémon) ` +
+                `- Its type(s) (combining types of both Pokémon) ` +
+                `- Any special characteristics or lore ` +
+                `Format your response as a JSON object with the following structure: ` +
+                `{ "name": "${fusionName}", "description": "The description text here", "types": ["type1", "type2"], "abilities": ["ability1", "ability2"] }`;
+            
+            // Use the current API key
+            const apiKey = geminiApiKeys[currentApiKeyIndex];
+            
+            // Call the Gemini API
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, 
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.9,
+                            topP: 1.0,
+                            topK: 32,
+                            maxOutputTokens: 8192,
+                        }
+                    })
+                }
+            );
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`API Error: ${errorData.error.message}`);
+            }
+            
+            const data = await response.json();
+            
+            // Extract the text response
+            const textResponse = data.candidates[0].content.parts[0].text;
+            
+            // Parse the JSON response
+            let fusionData;
+            try {
+                // Extract JSON from the response (in case there's additional text)
+                const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    fusionData = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (e) {
+                // Fallback if JSON parsing fails
+                fusionData = {
+                    name: fusionName,
+                    description: textResponse,
+                    types: ["Unknown"],
+                    abilities: ["Unknown"]
+                };
+            }
+            
+            // Extract the generated image if available
+            let imageUrl = null;
+            if (data.candidates[0].content.parts.length > 1 && 
+                data.candidates[0].content.parts[1].inlineData) {
+                const imageData = data.candidates[0].content.parts[1].inlineData;
+                const mimeType = imageData.mimeType;
+                const base64Data = imageData.data;
+                imageUrl = `${mimeType};base64,${base64Data}`;
+            }
+            
+            // If no image was generated, use a placeholder
+            if (!imageUrl) {
+                imageUrl = `https://placehold.co/400x400/3b4cca/ffffff?text=${fusionName}`;
+            }
+            
+            return {
+                name: fusionData.name,
+                image: imageUrl,
+                description: fusionData.description,
+                types: fusionData.types,
+                abilities: fusionData.abilities,
+                pokemon1: pokemon1,
+                pokemon2: pokemon2
+            };
+        }
+
+        // Display the fusion result
+        function displayFusionResult(fusionResult) {
+            fusionResultDiv.innerHTML = `
+                <img class="fusion-image" src="${fusionResult.image}" alt="${fusionResult.name}">
+                <p class="fusion-name">${fusionResult.name}</p>
+            `;
+            resultImage.src = fusionResult.image;
+            resultImage.alt = fusionResult.name;
+            resultName.textContent = fusionResult.name;
+            // Create a detailed description with types and abilities
+            const typesText = fusionResult.types.join(', ');
+            const abilitiesText = fusionResult.abilities.join(', ');
+            const detailedDescription = `<strong>Type:</strong> ${typesText}<br>` +
+                `<strong>Abilities:</strong> ${abilitiesText}<br><br>` +
+                `${fusionResult.description}`;
+            resultDescription.innerHTML = detailedDescription;
+            fusionDetails.style.display = 'block';
+            showNotification(`Successfully created ${fusionResult.name}!`);
+        }
+
+        // Show a notification
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Initialize the app when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
